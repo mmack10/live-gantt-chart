@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { createRoot } from 'react-dom/client';
 
 // --- Helper Functions for Date Calculations ---
 const addWorkingDays = (startDate, daysToAdd) => {
@@ -104,7 +105,7 @@ const ResourceModal = ({ task, availableResources, onSave, onClose, onUpdateAvai
 
 
 // --- Main App Component ---
-export default function App() {
+function App() {
     // --- State Management ---
     const [projectTitle, setProjectTitle] = useState('WBS Gantt Chart');
     const [projectSubtitle, setProjectSubtitle] = useState('Financials & Nested Sub-tasks');
@@ -125,9 +126,6 @@ export default function App() {
         {id: 105, name: 'Legal Team', rate: 300, cost: 220},
     ]);
     const chartRef = useRef();
-
-    // --- Load External Scripts ---
-    useEffect(() => { /* ... existing handler ... */ }, []);
 
     // --- Recursive Scheduling & Financial Logic (Immutable) ---
     const scheduledTasks = useMemo(() => {
@@ -171,8 +169,8 @@ export default function App() {
                 if (task.children && task.children.length > 0) {
                     scheduledChildren = calculateSchedules(task.children, workStart);
                     if (scheduledChildren.length > 0) {
-                        const childEndTimes = scheduledChildren.map(c => c.end.getTime());
-                        taskEnd = new Date(Math.max(...childEndTimes));
+                        const childEndTimes = scheduledChildren.map(c => c.end?.getTime()).filter(Boolean);
+                        taskEnd = childEndTimes.length > 0 ? new Date(Math.max(...childEndTimes)) : workStart;
                         totalChildCost = scheduledChildren.reduce((sum, child) => sum + child.totalCost, 0);
                     } else {
                         taskEnd = workStart;
@@ -332,7 +330,7 @@ export default function App() {
         const startTimes = taskItems.filter(t=>t.start).map(t => t.start.getTime());
         const endTimes = taskItems.filter(t=>t.end).map(t => t.end.getTime());
 
-        if(startTimes.length === 0) return { chartStartDate: new Date(), chartEndDate: new Date(), totalDuration: 1};
+        if(startTimes.length === 0 || startTimes.includes(NaN) || endTimes.includes(NaN)) return { chartStartDate: new Date(), chartEndDate: new Date(), totalDuration: 1};
 
         const d_start = new Date(Math.min(...startTimes));
         d_start.setDate(d_start.getDate() - 2);
@@ -518,3 +516,8 @@ export default function App() {
         </div>
     );
 }
+
+// --- Mount the App to the DOM ---
+const container = document.getElementById('root');
+const root = createRoot(container);
+root.render(<App />);

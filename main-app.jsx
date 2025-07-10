@@ -1,6 +1,6 @@
-import './index.css';
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
+import './index.css';
 
 // --- Helper Functions for Date Calculations ---
 const addWorkingDays = (startDate, daysToAdd) => {
@@ -518,7 +518,8 @@ function App() {
     );
 }
 
-// --- Mount the App to the DOM ---
+// --- This is the crucial part that was missing ---
+// It tells React where to render the App component in the HTML
 const container = document.getElementById('root');
 const root = createRoot(container);
 root.render(<App />);
